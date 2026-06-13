@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>⚡ 英単語ハックマスター - 英検1級 ⚡</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .progress-bar {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-blue-500/30">
+
+    <!-- APP HEADER -->
+    <header class="w-full glass-card border-b border-slate-800 px-4 py-3 sticky top-0 z-50 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl">⚡</span>
+            <h1 class="text-base font-bold tracking-wider text-blue-400">HACK MASTER [英検1級]</h1>
+        </div>
+        <!-- Combo Indicator -->
+        <div id="header-combo" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full text-xs tracking-wider animate-bounce">
+            🔥 <span id="header-combo-count">0</span> COMBO
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 w-full max-w-md mx-auto p-4 flex flex-col justify-start">
+
+        <!-- 1. HOME SCREEN -->
+        <div id="screen-home" class="space-y-6 w-full">
+            <div class="text-center py-2">
+                <p class="text-xs text-slate-400 uppercase tracking-widest">Target Acquired</p>
+                <h2 class="text-xl font-black text-slate-100 mt-1">パス単 英検1級 完全連動</h2>
+                <p class="text-xs text-emerald-400 mt-1">🌹 語源・イメージ・補足 100%同期済み</p>
+            </div>
+
+            <!-- Dashboard / Overview -->
+            <div class="glass-card rounded-2xl p-4 border border-blue-500/20 bg-gradient-to-br from-blue-950/30 to-slate-900/50">
+                <div class="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>総クリア率 (マスター済みの割合)</span>
+                    <span id="total-progress-percent" class="font-bold text-blue-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="total-progress-bar" class="progress-bar bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-0"></div>
+                </div>
+            </div>
+
+            <!-- Section Lists -->
+            <div id="section-list" class="space-y-3.5 max-h-[60vh] overflow-y-auto pr-1">
+                <!-- Section cards injected here -->
+            </div>
+        </div>
+
+        <!-- 2. QUIZ SCREEN -->
+        <div id="screen-quiz" class="hidden space-y-4 w-full flex-1 flex flex-col justify-between">
+            
+            <div class="flex items-center justify-between">
+                <button id="btn-back" class="text-xs font-bold text-slate-400 hover:text-slate-200 flex items-center space-x-1 py-1 px-2 rounded-lg bg-slate-800/50">
+                    <span>↩ 中断して戻る</span>
+                </button>
+                <div class="text-xs font-mono tracking-wider bg-slate-800/80 px-2.5 py-1 rounded-md text-slate-300">
+                    残り: <span id="quiz-count" class="font-bold text-blue-400">0</span>問
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="progress-bar bg-blue-500 h-full w-0"></div>
+                </div>
+                <div class="flex justify-between items-center px-0.5">
+                    <span id="quiz-combo-badge" class="opacity-0 text-[10px] font-bold bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30 transition-all">
+                        🔥 COMBO <span id="quiz-combo-count">0</span>
+                    </span>
+                    <span id="quiz-section-title" class="text-[10px] text-slate-500 uppercase tracking-wider font-bold"></span>
+                </div>
+            </div>
+
+            <!-- FLASH CARD CONTAINER -->
+            <div class="glass-card rounded-2xl p-5 border border-slate-700/60 bg-gradient-to-b from-slate-800/40 to-slate-900/60 flex-1 flex flex-col justify-between shadow-xl min-h-[350px]">
+                
+                <div class="space-y-3.5">
+                    <div class="space-y-1">
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-slate-500 block">日本語意味・補足融合</span>
+                        <div class="text-slate-100 font-bold text-base leading-snug" id="quiz-hint-meaning"></div>
+                    </div>
+
+                    <div id="quiz-memory-booster" class="grid grid-cols-1 gap-2 pt-2 border-t border-slate-800 text-[11px]">
+                        <div class="bg-slate-950/40 p-2 rounded-lg border border-slate-800/50">
+                            <span class="text-[9px] font-bold text-blue-400 block">💡 語源・イメージ感覚補足</span>
+                            <span id="quiz-boost-etymology" class="text-slate-300 font-medium whitespace-pre-line"></span>
+                        </div>
+                        <div class="bg-slate-950/40 p-2 rounded-lg border border-slate-800/50" id="prep-box">
+                            <span class="text-[9px] font-bold text-indigo-400 block">🔗 熟語・前置詞イメージ</span>
+                            <span id="quiz-boost-preposition" class="text-slate-300 font-medium whitespace-pre-line"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="py-4 my-auto text-center">
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">英語フレーズ（空欄をハックせよ）</p>
+                    <div id="quiz-phrase" class="text-base md:text-lg font-bold text-slate-100 leading-relaxed tracking-wide"></div>
+                </div>
+
+                <div id="quiz-answer-zone" class="invisible py-3 text-center border-t border-slate-800/60 bg-slate-950/20 rounded-xl space-y-2">
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-blue-400">正解単語</p>
+                    <div id="quiz-correct-word" class="text-2xl font-black tracking-wider text-emerald-400"></div>
+                    
+                    <div class="flex justify-center space-x-2 pt-1">
+                        <button id="btn-speak-word" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1 rounded-lg border border-slate-700 active:scale-95 transition-transform">🔊 単語</button>
+                        <button id="btn-speak-phrase" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1 rounded-lg border border-slate-700 active:scale-95 transition-transform">🔊 フレーズ</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BUTTONS CONTROL PAD -->
+            <div class="w-full pt-1">
+                <button id="btn-reveal" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg active:scale-[0.99] transition-transform text-sm tracking-widest">
+                    👁 答えを見る
+                </button>
+
+                <div id="quiz-choice-pad" class="hidden grid grid-cols-2 gap-3.5">
+                    <button id="btn-wrong" class="bg-gradient-to-b from-rose-600 to-rose-700 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-all text-center">
+                        ❌ 違った
+                    </button>
+                    <button id="btn-correct" class="bg-gradient-to-b from-emerald-600 to-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-all text-center">
+                        ⭕ 合ってた
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="w-full text-center py-2 text-[10px] text-slate-600 border-t border-slate-900 bg-slate-950/40">
+        &copy; 2026 Word Hacker System [英検1級]
+    </footer>
+
+    <script>
+        const MASTER_DATA = [{"id": 1, "section": "Section 1 (1級)", "word": "claim", "phrase": "The scientist did not _____ that the treatment was perfect, but she said the results were promising.", "meaning": "主張する；要求する；奪う", "note": "主張するだけでなく、権利として要求する、災害・事故が命を奪うという意味もある。", "etymology": "ラテン語 L.clamare「叫ぶ、呼ぶ」\n【補足】clamare「叫ぶ」から。強く声に出して要求・主張するイメージ。", "preposition": ""}, {"id": 2, "section": "Section 1 (1級)", "word": "project", "phrase": "Analysts _____ that demand for renewable energy will continue to rise over the next decade.", "meaning": "見積もる 提示する", "note": "企画・計画だけでなく、予測する、映し出す、突き出るという意味もある。", "etymology": "pro（前に）+ ject（投げる）", "preposition": ""}, {"id": 3, "section": "Section 1 (1級)", "word": "expand", "phrase": "The university plans to _____ its scholarship program for students from rural areas.", "meaning": "拡大する", "note": "", "etymology": "ex-（～の外へ）＋pando（広げる）", "preposition": ""}, {"id": 4, "section": "Section 1 (1級)", "word": "address", "phrase": "The mayor promised to _____ the housing shortage before the end of the year.", "meaning": "(問題を）取り上げる 対処する 話しかける", "note": "住所だけでなく、問題に取り組む、演説する、人に呼びかける意味が頻出。", "etymology": "a-（～へ）＋drecier（真っすぐにする）\n【補足】ad-「〜へ」+ directus「まっすぐにされた」系。相手や問題へまっすぐ向かう感覚。", "preposition": ""}, {"id": 5, "section": "Section 1 (1級)", "word": "detect", "phrase": "The new sensor can _____ tiny changes in air quality within seconds.", "meaning": "感知する 発見する", "note": "", "etymology": "de「否定」tect「覆う」\n【補足】de-はここでは「外へ／離れて」の感覚。detect＝覆いを外して見つける（de- + tegere「覆う」）。", "preposition": ""}, {"id": 6, "section": "Section 1 (1級)", "word": "evolve", "phrase": "Languages _____ as societies change and new technologies appear.", "meaning": "（～から）進化する", "note": "", "etymology": "e「外へ」volve「回転する」", "preposition": ""}, {"id": 7, "section": "Section 1 (1級)", "word": "guarantee", "phrase": "No policy can _____ success, but careful planning reduces the risk of failure.", "meaning": "確約する", "note": "", "etymology": "garant（保護）→㋫㋗warjan（攻撃をかわす）\n→㋘warjana（守る）→㋑wer-（覆う）\n【補足】guarantee は保証・保護の語系。warranty と同系統の歴史を持つ。", "preposition": ""}, {"id": 8, "section": "Section 1 (1級)", "word": "implement", "phrase": "The school will _____ a new curriculum focused on critical thinking.", "meaning": "実施する", "note": "", "etymology": "im「中へ」ple「満たす」", "preposition": ""}, {"id": 9, "section": "Section 1 (1級)", "word": "weather", "phrase": "Small businesses struggled to _____ the sharp rise in energy prices.", "meaning": "切り抜ける", "note": "名詞は天気。動詞では嵐や困難を『耐えて切り抜ける』意味。", "etymology": "weder（空気、空、そよ風）\n【補足】動詞では「嵐・困難を耐えて切り抜ける」という比喩に発展。", "preposition": ""}, {"id": 10, "section": "Section 1 (1級)", "word": "justify", "phrase": "The company must _____ the price increase to its customers.", "meaning": "正当化する 正当性を示す", "note": "", "etymology": "just(正しい）+fy", "preposition": ""}, {"id": 11, "section": "Section 2 (1級)", "word": "convict", "phrase": "The jury refused to _____ the defendant without clear evidence.", "meaning": "（～で）有罪判決を下す", "note": "", "etymology": "com(強調)とvincere(征服する)", "preposition": ""}, {"id": 12, "section": "Section 2 (1級)", "word": "prioritize", "phrase": "Hospitals must _____ patients who need urgent care.", "meaning": "優先する", "note": "", "etymology": "pri-（前の）＋-ior（もっと）＋ize(化）", "preposition": ""}, {"id": 13, "section": "Section 2 (1級)", "word": "rebel", "phrase": "Some citizens began to _____ against the unfair tax system.", "meaning": "反逆する", "note": "", "etymology": "「re-」と「戦争を行なう」を意味する「bellō」", "preposition": ""}, {"id": 14, "section": "Section 2 (1級)", "word": "fuel", "phrase": "Rumors on social media can _____ public anxiety during a crisis.", "meaning": "あおる 燃料を補給する", "note": "", "etymology": "feu（火）", "preposition": ""}, {"id": 15, "section": "Section 2 (1級)", "word": "sustain", "phrase": "A small charity cannot _____ its activities without stable funding.", "meaning": "維持する 耐える", "note": "", "etymology": "sus「下に」tain「つかんで離さない」", "preposition": ""}, {"id": 16, "section": "Section 2 (1級)", "word": "portray", "phrase": "The documentary _____ the artist as both brilliant and deeply vulnerable.", "meaning": "描写する", "note": "", "etymology": "por-（～を通って）＋traire（描く）\n→㋶traho（引く）", "preposition": ""}, {"id": 17, "section": "Section 2 (1級)", "word": "manipulate", "phrase": "Politicians sometimes _____ statistics to support their arguments.", "meaning": "操作する", "note": "", "etymology": "mani「手」pul「満たす」ate「する」", "preposition": ""}, {"id": 18, "section": "Section 2 (1級)", "word": "stimulate", "phrase": "The tax cut was designed to _____ consumer spending.", "meaning": "刺激する", "note": "", "etymology": "stimulus（刺すこと）→sti(先端　突き刺す)", "preposition": ""}, {"id": 19, "section": "Section 2 (1級)", "word": "integrate", "phrase": "The program helps immigrants _____ into the local community.", "meaning": "（～に）溶け込む （～に）統合する", "note": "", "etymology": "integer（完全な）＋-o（動詞）→㋶in-（否定）＋tango（触れる.\n【補足】integer「完全な・損なわれていない」から。in-は否定ではなく「完全性」の語史に関係。", "preposition": ""}, {"id": 20, "section": "Section 2 (1級)", "word": "undergo", "phrase": "The old railway station will _____ major repairs next spring.", "meaning": "経験する", "note": "", "etymology": "under-（～の下に）＋go（行く）", "preposition": ""}, {"id": 21, "section": "Section 3 (1級)", "word": "diagnose", "phrase": "Doctors used several tests to _____ the cause of the patient's symptoms.", "meaning": "診断する 原因を究明する", "note": "", "etymology": "dia「横切って」gno「知る」", "preposition": ""}, {"id": 22, "section": "Section 3 (1級)", "word": "enforce", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "執行する", "note": "", "etymology": "en「その状態にする」fort「強い、かたい」", "preposition": ""}, {"id": 23, "section": "Section 3 (1級)", "word": "abuse", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "悪用する 濫用する", "note": "", "etymology": "ab「離れた」use「使う」", "preposition": ""}, {"id": 24, "section": "Section 3 (1級)", "word": "dismiss", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "却下する 解雇する", "note": "", "etymology": "dis「離れて」miss「送る」が語源で、「いまの場から離れたところへ送る」", "preposition": ""}, {"id": 25, "section": "Section 3 (1級)", "word": "migrate", "phrase": "The situation began to _____ as social and economic pressures increased.", "meaning": "（鳥・魚などが）渡る；人が移住する；データ・システムが移行する", "note": "「鳥・魚が渡る」だけでなく、人が移住する、データ・制度が別環境へ移行する意味も重要。", "etymology": "migro（移住する）→mey-（変える）", "preposition": ""}, {"id": 26, "section": "Section 3 (1級)", "word": "contradict", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "反論する 矛盾する", "note": "", "etymology": "contra「反対に」dict「話す」", "preposition": ""}, {"id": 27, "section": "Section 3 (1級)", "word": "plague", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "～を絶えず苦しめる・疫病", "note": "", "etymology": "大打撃（plaga）", "preposition": ""}, {"id": 28, "section": "Section 3 (1級)", "word": "complex", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "集合体 強迫観念", "note": "", "etymology": "com「共に」plex「折る」\n【補足】complex は com-「共に」+ plectere「編む・折り重ねる」。複数要素が絡み合うイメージ。", "preposition": ""}, {"id": 29, "section": "Section 3 (1級)", "word": "congress", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "米国議会", "note": "", "etymology": "「con: 共に」+「gress: 進む」", "preposition": ""}, {"id": 30, "section": "Section 3 (1級)", "word": "antibiotic", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "抗生物質", "note": "", "etymology": "anti「反する」bio「命」ic「性質」＝「生物に対抗する性質」", "preposition": ""}, {"id": 31, "section": "Section 4 (1級)", "word": "amendment", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "修正 改正", "note": "", "etymology": "ex-（～の外へ）＋menda（傷）", "preposition": ""}, {"id": 32, "section": "Section 4 (1級)", "word": "diversity", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "多様性", "note": "", "etymology": "異なる別々の（dis-）方向を向いた（versus）", "preposition": ""}, {"id": 33, "section": "Section 4 (1級)", "word": "plot", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "陰謀 構想 平面図", "note": "", "etymology": "？", "preposition": ""}, {"id": 34, "section": "Section 4 (1級)", "word": "advocate", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "支持者 擁護者", "note": "", "etymology": "ad「その方向へ」voc「呼ぶ」ate「する」=「弁護のために呼ばれる」", "preposition": ""}, {"id": 35, "section": "Section 4 (1級)", "word": "trait", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "資質", "note": "", "etymology": "㋠㋫trait（一筆の動き）", "preposition": ""}, {"id": 36, "section": "Section 4 (1級)", "word": "perspective", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "観点 遠近法 展望", "note": "", "etymology": "見（specio）通し（per-）ている（-ivus）こと、空間や全体を見通すこと", "preposition": ""}, {"id": 37, "section": "Section 4 (1級)", "word": "stem", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "茎　幹　船首", "note": "", "etymology": "stamniz（木の幹）→sta-（立つ）", "preposition": ""}, {"id": 38, "section": "Section 4 (1級)", "word": "component", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "構成部品　構成要素", "note": "", "etymology": "com「ともに」pone「置く」ent「人、もの」", "preposition": ""}, {"id": 39, "section": "Section 4 (1級)", "word": "balance", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "残高", "note": "均衡だけでなく、残高、天秤にかける、両立させる。", "etymology": "㋶bis（二つ/二度）＋lanx（てんびん皿）が語源。「天秤の二つの（bis）皿（lanx）の平衡状態」", "preposition": ""}, {"id": 40, "section": "Section 4 (1級)", "word": "inmate", "phrase": "The report offered an _____ assessment of the policy's long-term effects.", "meaning": "（病院・老人ホーム・刑務所などの）収容者", "note": "", "etymology": "in (内側) + mate (仲間)", "preposition": ""}, {"id": 41, "section": "Section 5 (1級)", "word": "extinction", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "絶滅", "note": "", "etymology": "ex-（外へ）＋stinguo（火を消す）「生命の火をもみ消すこと」", "preposition": ""}, {"id": 42, "section": "Section 5 (1級)", "word": "proponent", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "支持者 提唱者", "note": "", "etymology": "pro（前）とponere（置く）", "preposition": ""}, {"id": 43, "section": "Section 5 (1級)", "word": "uprising", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "反乱　暴動", "note": "", "etymology": "up (上に) + rising (昇る・立ち上がる)", "preposition": ""}, {"id": 44, "section": "Section 5 (1級)", "word": "perception", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "認識 知覚", "note": "", "etymology": "per「徹底的に」cept「つかみ取る」ion「こと、もの」", "preposition": ""}, {"id": 45, "section": "Section 5 (1級)", "word": "habitat", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "生息環境 居住地", "note": "", "etymology": "habito（住む）→㋶habeo（持つ）＋-to（反復動詞）", "preposition": ""}, {"id": 46, "section": "Section 5 (1級)", "word": "bias", "phrase": "The report offered a _____ assessment of the policy's long-term effects.", "meaning": "えこひいき 先入観 傾向", "note": "", "etymology": "㋔㋗biais（傾斜）", "preposition": ""}, {"id": 47, "section": "Section 5 (1級)", "word": "microbe", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "病原菌 微生物", "note": "", "etymology": "㋙㋖mikros（小さい）＋bios（生命体）", "preposition": ""}, {"id": 48, "section": "Section 5 (1級)", "word": "archaeologist", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "考古学者", "note": "", "etymology": "arkhaios（古代の）＋logos（話し）→arkhē（始まり・起源）", "preposition": ""}, {"id": 49, "section": "Section 5 (1級)", "word": "mutation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "変異型", "note": "", "etymology": "㋶muto（かえる）→㋶moveo（動かす）", "preposition": ""}, {"id": 50, "section": "Section 5 (1級)", "word": "attribute", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "特質 属性", "note": "", "etymology": "ad-（方へ）＋tribuo（与える）が語源。 \n「それに理由を与えること」", "preposition": ""}, {"id": 51, "section": "Section 6 (1級)", "word": "nanoparticle", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "ナノ粒子", "note": "", "etymology": "nano(ドワーフ→小さい→極小）+particle(pars（部分）\n＋-cula（小さい）)", "preposition": ""}, {"id": 52, "section": "Section 6 (1級)", "word": "regime", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "政権 政体", "note": "", "etymology": "regere(支配する) reg(直線上を移動する→導く・支配する）", "preposition": ""}, {"id": 53, "section": "Section 6 (1級)", "word": "algorithm", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "アルゴリズム", "note": "", "etymology": "al-kuwarizmiyy（高度な数学を西洋に紹介したペルシャ人数学者の名字", "preposition": ""}, {"id": 54, "section": "Section 6 (1級)", "word": "vet", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "獣医", "note": "", "etymology": "〈人・ものを〉綿密に調べる", "preposition": ""}, {"id": 55, "section": "Section 6 (1級)", "word": "dispute", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "論争", "note": "", "etymology": "dis(離れて)とputate(考える)", "preposition": ""}, {"id": 56, "section": "Section 6 (1級)", "word": "migration", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "移住", "note": "", "etymology": "migr「動く」-ation「すること」", "preposition": ""}, {"id": 57, "section": "Section 6 (1級)", "word": "laborer", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "（肉体）労働者", "note": "", "etymology": "lab(働く）", "preposition": ""}, {"id": 58, "section": "Section 6 (1級)", "word": "prohibition", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "（米国の）禁酒法時代　禁止", "note": "", "etymology": "pro「前に」hibit「持つ」", "preposition": ""}, {"id": 59, "section": "Section 6 (1級)", "word": "reservoir", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "貯水池", "note": "", "etymology": "re- \"後方\" + servare \"保つ、保存する　保護する\"", "preposition": ""}, {"id": 60, "section": "Section 6 (1級)", "word": "founder", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "創設者", "note": "", "etymology": "found「基礎を置く」er「人、もの」", "preposition": ""}, {"id": 61, "section": "Section 7 (1級)", "word": "inhabitant", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "住民", "note": "", "etymology": "㋶in-（～の中に）＋habito（住む）", "preposition": ""}, {"id": 62, "section": "Section 7 (1級)", "word": "commitment", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "責任 献身", "note": "", "etymology": "㋶com-（一緒に）＋mitto（送る）", "preposition": ""}, {"id": 63, "section": "Section 7 (1級)", "word": "rebellion", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "反乱", "note": "", "etymology": "re（反対）とbellum（戦い）", "preposition": ""}, {"id": 64, "section": "Section 7 (1級)", "word": "capitalism", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "資本主義", "note": "", "etymology": "capital(資本)とism(学説) caput \"頭\"", "preposition": ""}, {"id": 65, "section": "Section 7 (1級)", "word": "crack", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "割れ目", "note": "", "etymology": "krakona（割れた音を立てる）", "preposition": ""}, {"id": 66, "section": "Section 7 (1級)", "word": "hydrogen", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "水素", "note": "", "etymology": "hydro「水の」gen「生む」", "preposition": ""}, {"id": 67, "section": "Section 7 (1級)", "word": "slavery", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "奴隷制度", "note": "", "etymology": "slave「奴隷」ery「こと、もの」 Slav(スラブ人）", "preposition": ""}, {"id": 68, "section": "Section 7 (1級)", "word": "warfare", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "交戦状態", "note": "", "etymology": "war（戦争）＋fare（行く）wers- \"混乱させる　混ぜ合わせる\"", "preposition": ""}, {"id": 69, "section": "Section 7 (1級)", "word": "criterion", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "基準 標準", "note": "", "etymology": "古代ギリシャ語 kriterion（判決の方法）→krino（判決する）", "preposition": ""}, {"id": 70, "section": "Section 7 (1級)", "word": "asset", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "資産 長所", "note": "", "etymology": "ad（～に）＋satis（十分な）", "preposition": ""}, {"id": 71, "section": "Section 8 (1級)", "word": "conviction", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "確信 有罪の判決", "note": "", "etymology": "con-（強調）＋vinco（勝ち取る）", "preposition": ""}, {"id": 72, "section": "Section 8 (1級)", "word": "corruption", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "腐敗", "note": "", "etymology": "完全に（com-）壊れた（ruptus）", "preposition": ""}, {"id": 73, "section": "Section 8 (1級)", "word": "legacy", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "遺産", "note": "", "etymology": "legatus \"大使、代理人\"", "preposition": ""}, {"id": 74, "section": "Section 8 (1級)", "word": "offender", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "犯罪者", "note": "", "etymology": "ob-（～に対して）＋fendo（打つ）+er(人）", "preposition": ""}, {"id": 75, "section": "Section 8 (1級)", "word": "propaganda", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "宣伝（活動）", "note": "", "etymology": "propagate（挿し木、接ぎ木で増やす）= pro (前)+pag(固定する)+ ate(動詞)", "preposition": ""}, {"id": 76, "section": "Section 8 (1級)", "word": "republic", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "共和国", "note": "", "etymology": "res（こと、もの）＋publica（人々の）", "preposition": ""}, {"id": 77, "section": "Section 8 (1級)", "word": "telescope", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "望遠鏡", "note": "", "etymology": "tele「遠く」scope「見るもの」spek-, 見ること", "preposition": ""}, {"id": 78, "section": "Section 8 (1級)", "word": "humanity", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "人文科学", "note": "", "etymology": "hum homo(土(earth) 人間）+ity(こと）", "preposition": ""}, {"id": 79, "section": "Section 8 (1級)", "word": "immunization", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "予防接種", "note": "", "etymology": "in- \"反対\" + munis \"サービスの執行\"+ation(すること）", "preposition": ""}, {"id": 80, "section": "Section 8 (1級)", "word": "islander", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "島民", "note": "", "etymology": "ieg「水に囲まれたもの」land「土地」", "preposition": ""}, {"id": 81, "section": "Section 9 (1級)", "word": "vent", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "通気孔", "note": "", "etymology": "venire「来る」", "preposition": ""}, {"id": 82, "section": "Section 9 (1級)", "word": "incentive", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "刺激 動機 報奨金", "note": "", "etymology": "incino（歌う）＋-ivus（こと）→in-（中に）＋cano（歌う）「歌で鼓舞すること」", "preposition": ""}, {"id": 83, "section": "Section 9 (1級)", "word": "prosecutor", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "検察官", "note": "", "etymology": "pro(前)とsequi(続ける) 原義はラテン語のprosequi(付け狙う)", "preposition": ""}, {"id": 84, "section": "Section 9 (1級)", "word": "potential", "phrase": "The report offered a _____ assessment of the policy's long-term effects.", "meaning": "潜在的な", "note": "", "etymology": "pot「できる/主」ent「性質」al「性質」", "preposition": ""}, {"id": 85, "section": "Section 9 (1級)", "word": "indigenous", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "土着の （その土地に）固有の", "note": "", "etymology": "indi-（中に）＋gigno（産む）「原産の」", "preposition": ""}, {"id": 86, "section": "Section 9 (1級)", "word": "enormous", "phrase": "The report offered an _____ assessment of the policy's long-term effects.", "meaning": "巨大な", "note": "", "etymology": "enormis（膨大な）＋-ous（多い）→ex-（外へ）＋norma（標準）", "preposition": ""}, {"id": 87, "section": "Section 9 (1級)", "word": "widespread", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "広範な、広く知られた", "note": "", "etymology": "wide（幅の広い）＋spread（広がる）", "preposition": ""}, {"id": 88, "section": "Section 9 (1級)", "word": "inevitable", "phrase": "The report offered an _____ assessment of the policy's long-term effects.", "meaning": "避けられない", "note": "", "etymology": "in-（否定）＋e-（外へ）＋vito（避ける）＋-abilis（可能な）", "preposition": ""}, {"id": 89, "section": "Section 9 (1級)", "word": "extinct", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "絶滅した 死に絶えた", "note": "", "etymology": "ex-（外へ）＋stinguo（火を消す）", "preposition": ""}, {"id": 90, "section": "Section 9 (1級)", "word": "electoral", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "選挙の", "note": "", "etymology": "ex \"外\"+ legere \"選ぶ\"", "preposition": ""}, {"id": 91, "section": "Section 10 (1級)", "word": "subsequent", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "その後の", "note": "", "etymology": "下に（sub-）続い（sequor）ている（-ens）こと", "preposition": ""}, {"id": 92, "section": "Section 10 (1級)", "word": "controversial", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "問題の 物議を醸す", "note": "", "etymology": "contro「反対に」verse「向きを変える」al「性質」", "preposition": ""}, {"id": 93, "section": "Section 10 (1級)", "word": "disruptive", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "固定観念を壊す", "note": "", "etymology": "dis(分離)とrumpere(壊す)", "preposition": ""}, {"id": 94, "section": "Section 10 (1級)", "word": "robotic", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "ロボットの", "note": "", "etymology": "robota（強制労働）rabu \"奴隷\"", "preposition": ""}, {"id": 95, "section": "Section 10 (1級)", "word": "toxic", "phrase": "The report offered a _____ assessment of the policy's long-term effects.", "meaning": "有毒な", "note": "", "etymology": "toxikos（毒矢に使う毒物）→toxon（弓）＋-ikos（～の）", "preposition": ""}, {"id": 96, "section": "Section 10 (1級)", "word": "domesticated", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "家畜化された", "note": "", "etymology": "domus \"house\"＝家に住む", "preposition": ""}, {"id": 97, "section": "Section 10 (1級)", "word": "left-wing", "phrase": "The expression \"_____-wing\" appears in a passage about negotiation, responsibility, and social change.", "meaning": "左翼の", "note": "", "etymology": "left（左）+wing（翼）", "preposition": ""}, {"id": 98, "section": "Section 10 (1級)", "word": "ultimately", "phrase": "The committee responded _____ after the new evidence was presented.", "meaning": "最終的には", "note": "", "etymology": "ulter（遠く彼方の）＋-imus（最上級）", "preposition": ""}, {"id": 99, "section": "Section 10 (1級)", "word": "initially", "phrase": "The committee responded _____ after the new evidence was presented.", "meaning": "最初は", "note": "", "etymology": "in「中へ」it「行く」al「性質」＝「物事の中へ首をつっこんで始める」", "preposition": ""}, {"id": 100, "section": "Section 10 (1級)", "word": "genetically", "phrase": "The committee responded _____ after the new evidence was presented.", "meaning": "遺伝的に", "note": "", "etymology": "genesis(起源)　gene(生み出す)", "preposition": ""}, {"id": 101, "section": "Section 11 (1級)", "word": "cast", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "（疑惑などを）投げかける", "note": "", "etymology": "kasta \"投げる\"", "preposition": ""}, {"id": 102, "section": "Section 11 (1級)", "word": "supplement", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "補う 付録を付ける", "note": "", "etymology": "sup「下に」ple「満たす」ment「こと」＝下（ベース）から満たしていくもの", "preposition": ""}, {"id": 103, "section": "Section 11 (1級)", "word": "outweigh", "phrase": "The situation began to _____ as social and economic pressures increased.", "meaning": "より価値がある", "note": "", "etymology": "out-（～の外へ）＋weigh（重さがある）", "preposition": ""}, {"id": 104, "section": "Section 11 (1級)", "word": "implant", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "埋め込む", "note": "", "etymology": "im=中 plant=植物", "preposition": ""}, {"id": 105, "section": "Section 11 (1級)", "word": "enhance", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "高める（質を高める）", "note": "", "etymology": "en=にする hance = high (高い)", "preposition": ""}, {"id": 106, "section": "Section 11 (1級)", "word": "revise", "phrase": "The organization tried to _____ its procedures to meet international standards.", "meaning": "改訂する 改正する", "note": "", "etymology": "re-（再び）＋viso（見る）", "preposition": ""}, {"id": 107, "section": "Section 11 (1級)", "word": "contend", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "競う", "note": "", "etymology": "con「強意」tend「伸ばす」", "preposition": ""}, {"id": 108, "section": "Section 11 (1級)", "word": "execute", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "実行する 死刑にする", "note": "", "etymology": "ex（外に、最後まで)+sequte（ついていく、伴う）", "preposition": ""}, {"id": 109, "section": "Section 11 (1級)", "word": "undermine", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "衰えさせる", "note": "", "etymology": "under（下の）'+'mine（掘る、鉱山）'で「下を掘る」", "preposition": ""}, {"id": 110, "section": "Section 11 (1級)", "word": "administer", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "運営する 施行する", "note": "", "etymology": "㋶ad-（～に）＋ministro（奉仕する）", "preposition": ""}, {"id": 111, "section": "Section 12 (1級)", "word": "suspend", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "一時停止する つるす", "note": "", "etymology": "sus「下に」pend「ぶら下げる」", "preposition": ""}, {"id": 112, "section": "Section 12 (1級)", "word": "cease", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "終える 終わる", "note": "", "etymology": "㋶cesso（静止する）→㋶cedo（去る）＋-to（反復）", "preposition": ""}, {"id": 113, "section": "Section 12 (1級)", "word": "assault", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "暴行する 攻撃する", "note": "", "etymology": "～へ（ad-）飛び掛かる（salio）こと", "preposition": ""}, {"id": 114, "section": "Section 12 (1級)", "word": "lobby", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "運動する 議員に働きかける", "note": "", "etymology": "ラテン語で「玄関、柱廊」", "preposition": ""}, {"id": 115, "section": "Section 12 (1級)", "word": "torture", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "拷問する", "note": "", "etymology": "tort「ねじる」", "preposition": ""}, {"id": 116, "section": "Section 12 (1級)", "word": "envision", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "を心に思い描く", "note": "", "etymology": "en- ＝ 〜にする　vision＝ビジョン vis(見る)", "preposition": ""}, {"id": 117, "section": "Section 12 (1級)", "word": "govern", "phrase": "The _____ needs to _____ the issue before it causes further confusion.", "meaning": "統治する", "note": "", "etymology": "guberno（船のかじを取る）", "preposition": ""}, {"id": 118, "section": "Section 12 (1級)", "word": "reconsider", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "再考する", "note": "", "etymology": "re「再び」con「強意」sidus「星」＝「何度も星をじっと観察して考える」", "preposition": ""}, {"id": 119, "section": "Section 12 (1級)", "word": "enzyme", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "酵素", "note": "", "etymology": "en(中)+zyme(酵母)", "preposition": ""}, {"id": 120, "section": "Section 12 (1級)", "word": "faculty", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "能力、才能、教授陣", "note": "", "etymology": "実行する（facio）能力がある（-ilis）こと（-itas）", "preposition": ""}, {"id": 121, "section": "Section 13 (1級)", "word": "predator", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "捕食動物 略奪者", "note": "", "etymology": "prey(捕食する) preie（犠牲）", "preposition": ""}, {"id": 122, "section": "Section 13 (1級)", "word": "execution", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "処刑", "note": "", "etymology": "ex（外に、最後まで)+sequte（ついていく、伴う）", "preposition": ""}, {"id": 123, "section": "Section 13 (1級)", "word": "implication", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "影響　結果　ほのめかし", "note": "", "etymology": "im「中へ」ply「折る」tion「こと、もの」＝「意味を内に含めて間接的に伝える」", "preposition": ""}, {"id": 124, "section": "Section 13 (1級)", "word": "interpretation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "解釈　通訳", "note": "", "etymology": "inter（間で）＋pret（値段を決める）", "preposition": ""}, {"id": 125, "section": "Section 13 (1級)", "word": "extent", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "程度", "note": "", "etymology": "ex(外)+ten(伸ばす)", "preposition": ""}, {"id": 126, "section": "Section 13 (1級)", "word": "pyramid", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "ピラミッド", "note": "", "etymology": "？ギリシアで三角形のパンを指すピューラミス", "preposition": ""}, {"id": 127, "section": "Section 13 (1級)", "word": "midwife", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "助産師", "note": "", "etymology": "mid(～とともに)+wife(女性)", "preposition": ""}, {"id": 128, "section": "Section 13 (1級)", "word": "hypothesis", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "仮説", "note": "", "etymology": "hypo(下)とthesis(置く)", "preposition": ""}, {"id": 129, "section": "Section 13 (1級)", "word": "canal", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "運河", "note": "", "etymology": "canalis = pipe(管, パイプ)", "preposition": ""}, {"id": 130, "section": "Section 13 (1級)", "word": "communism", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "共産主義", "note": "", "etymology": "comun（共通の、一般的な,自由な、開かれた、公共の）＋ism（主義）", "preposition": ""}, {"id": 131, "section": "Section 14 (1級)", "word": "compensation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "保証金", "note": "", "etymology": "com(共に)+pen(吊るす、支払う)", "preposition": ""}, {"id": 132, "section": "Section 14 (1級)", "word": "consideration", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "考慮", "note": "", "etymology": "con「強意」sidus「星」ation「すること、するもの」が語源で、「星をじっと観察して見守ること」", "preposition": ""}, {"id": 133, "section": "Section 14 (1級)", "word": "corps", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "部隊", "note": "", "etymology": "corpus(体)", "preposition": ""}, {"id": 134, "section": "Section 14 (1級)", "word": "environmentalist", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "環境保護論者", "note": "", "etymology": "environ(取り囲む(en(中)+viron(円・回路))+ment(こと)+list(人)", "preposition": ""}, {"id": 135, "section": "Section 14 (1級)", "word": "nationalist", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "国家主義者", "note": "", "etymology": "nation(国家)+alist(主義者)　natus（生まれたもの）", "preposition": ""}, {"id": 136, "section": "Section 14 (1級)", "word": "offspring", "phrase": "The report offered an _____ assessment of the policy's long-term effects.", "meaning": "集合的に（人・動物の）子孫", "note": "", "etymology": "off- + spring「泉から流れ出したもの」", "preposition": ""}, {"id": 137, "section": "Section 14 (1級)", "word": "variation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "変化", "note": "", "etymology": "vari「変わる」", "preposition": ""}, {"id": 138, "section": "Section 14 (1級)", "word": "veteran", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "退役軍人", "note": "", "etymology": "vetus (“年老いた”)　 wet-\"年\"", "preposition": ""}, {"id": 139, "section": "Section 14 (1級)", "word": "eyewitness", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "目撃者", "note": "", "etymology": "eye (目) + witness (見ること)", "preposition": ""}, {"id": 140, "section": "Section 14 (1級)", "word": "tactic", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "戦術", "note": "", "etymology": "taktikē (tekhnē) \"整列（させること）\"", "preposition": ""}, {"id": 141, "section": "Section 15 (1級)", "word": "altruism", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "利他主義 利他心", "note": "", "etymology": "alt「別の」+ism「主義」", "preposition": ""}, {"id": 142, "section": "Section 15 (1級)", "word": "pesticide", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "殺虫剤", "note": "", "etymology": "㋓pest（害虫）＋-cide（殺すもの）", "preposition": ""}, {"id": 143, "section": "Section 15 (1級)", "word": "commodity", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "商品 生活用品", "note": "", "etymology": "commodus（当てはまる/便利な） com (強意) + modus \"手段 \"", "preposition": ""}, {"id": 144, "section": "Section 15 (1級)", "word": "accusation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "告訴", "note": "", "etymology": "ad(方向)とcausa(理由)", "preposition": ""}, {"id": 145, "section": "Section 15 (1級)", "word": "density", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "密度", "note": "", "etymology": "densus \"濃い　混んだ　曇った\"", "preposition": ""}, {"id": 146, "section": "Section 15 (1級)", "word": "mantle", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "マントル", "note": "", "etymology": "manteau（フランス語のマント）", "preposition": ""}, {"id": 147, "section": "Section 15 (1級)", "word": "homeopathy", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "ホメオパシー　同種療法", "note": "", "etymology": "homeo（同種の） +-patheia（病気）", "preposition": ""}, {"id": 148, "section": "Section 15 (1級)", "word": "obstetrician", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "産科医", "note": "", "etymology": "ob(～に対して）＋stare（立つ）+trix（女性）", "preposition": ""}, {"id": 149, "section": "Section 15 (1級)", "word": "detection", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "探知　検出", "note": "", "etymology": "de「否定」tect「覆う」tion「こと、もの」", "preposition": ""}, {"id": 150, "section": "Section 15 (1級)", "word": "parasite", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "寄生生物 居候", "note": "", "etymology": "para-（側で）＋sitos（食べ物）＝「他人の食卓で食事する人」", "preposition": ""}, {"id": 151, "section": "Section 16 (1級)", "word": "thesis", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "論文 論題", "note": "", "etymology": "tithemi（置く）＋-sis（こと）", "preposition": ""}, {"id": 152, "section": "Section 16 (1級)", "word": "coverage", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "報道 取材範囲", "note": "", "etymology": "cover（覆いを掛ける）＋-age（もの）", "preposition": ""}, {"id": 153, "section": "Section 16 (1級)", "word": "resurrection", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "復活", "note": "", "etymology": "re(もう一度)とsurgere(上げる)", "preposition": ""}, {"id": 154, "section": "Section 16 (1級)", "word": "molecule", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "分子", "note": "", "etymology": "moles（塊）＋-cula（小さい）", "preposition": ""}, {"id": 155, "section": "Section 16 (1級)", "word": "sway", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "支配 統治", "note": "", "etymology": "1510代からの、オランダ語やその他の言語の、「揺れる」という意味からの推移的意味", "preposition": ""}, {"id": 156, "section": "Section 16 (1級)", "word": "activist", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "活動家", "note": "", "etymology": "act「行動」ive「的な」ist「～する人」", "preposition": ""}, {"id": 157, "section": "Section 16 (1級)", "word": "certification", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "証明書", "note": "", "etymology": "certus(確実)+facere(する)", "preposition": ""}, {"id": 158, "section": "Section 16 (1級)", "word": "complication", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "合併症　複雑にする要因", "note": "", "etymology": "com「ともに」ply「折る」ation「すること、するもの」", "preposition": ""}, {"id": 159, "section": "Section 16 (1級)", "word": "consensus", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "総意　合意", "note": "", "etymology": "con(一緒に)+sense(感じる)", "preposition": ""}, {"id": 160, "section": "Section 16 (1級)", "word": "hostage", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "人質", "note": "", "etymology": "hoste（客をもてなす主人）＋-age（行為）", "preposition": ""}, {"id": 161, "section": "Section 17 (1級)", "word": "innocence", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "無罪　純真", "note": "", "etymology": "in (否定) + nocentem (害する)　nek (死)", "preposition": ""}, {"id": 162, "section": "Section 17 (1級)", "word": "journalism", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "ジャーナリズム", "note": "", "etymology": "jour「日」al「のような」ism「主義、主張」が語源で、「日々を伝えること」", "preposition": ""}, {"id": 163, "section": "Section 17 (1級)", "word": "landlord", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "家主、地主", "note": "", "etymology": "land 「地」+lord「主」", "preposition": ""}, {"id": 164, "section": "Section 17 (1級)", "word": "larva", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "幼虫", "note": "", "etymology": "亡霊、悪霊、マスク", "preposition": ""}, {"id": 165, "section": "Section 17 (1級)", "word": "playwright", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "劇作家、戯曲家", "note": "", "etymology": "play(劇)+wright(労働、働くこと)", "preposition": ""}, {"id": 166, "section": "Section 17 (1級)", "word": "relief", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "息抜き　安心", "note": "", "etymology": "re(強調)+levare(軽くする)", "preposition": ""}, {"id": 167, "section": "Section 17 (1級)", "word": "representation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "代表", "note": "", "etymology": "re(強調)+present(前に位置する)", "preposition": ""}, {"id": 168, "section": "Section 17 (1級)", "word": "senator", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "上院議員", "note": "", "etymology": "senex （老齢の、老人）", "preposition": ""}, {"id": 169, "section": "Section 17 (1級)", "word": "toxin", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "毒素", "note": "", "etymology": "toxon \"弓矢（→の毒）\"+in（中）", "preposition": ""}, {"id": 170, "section": "Section 17 (1級)", "word": "captor", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "捕らえる人、捕獲者", "note": "", "etymology": "kap- \"つかむ\"", "preposition": ""}, {"id": 171, "section": "Section 18 (1級)", "word": "irradiation", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "放射線照射", "note": "", "etymology": "in- \"中（に）\" + radiare \"輝く\"+ation\"こと\"", "preposition": ""}, {"id": 172, "section": "Section 18 (1級)", "word": "vulnerable", "phrase": "The report offered a _____ assessment of the policy's long-term effects.", "meaning": "傷つきやすい もろい", "note": "", "etymology": "vulnus（傷）「簡単に傷つけられること」", "preposition": ""}, {"id": 173, "section": "Section 18 (1級)", "word": "contemporary", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "現代の 同時代の", "note": "", "etymology": "con-（一緒の）＋temporarius（時代の）→tempus（時代）", "preposition": ""}, {"id": 174, "section": "Section 18 (1級)", "word": "crucial", "phrase": "The report offered a _____ assessment of the policy's long-term effects.", "meaning": "重大な 決定的な", "note": "", "etymology": "crux（十字架）", "preposition": ""}, {"id": 175, "section": "Section 18 (1級)", "word": "forensic", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "犯罪科学の　法廷の", "note": "", "etymology": "forens（公共広場）", "preposition": ""}, {"id": 176, "section": "Section 18 (1級)", "word": "colonial", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "植民地の", "note": "", "etymology": "colo（耕す）", "preposition": ""}, {"id": 177, "section": "Section 18 (1級)", "word": "magnetic", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "磁力の　磁気の", "note": "", "etymology": "マグネシア（Magnesia）の石（lithos）/磁石を発見したとされる人、マグネス", "preposition": ""}, {"id": 178, "section": "Section 18 (1級)", "word": "naval", "phrase": "The lecture explained the concept of _____ in relation to modern society.", "meaning": "海軍の", "note": "", "etymology": "nau- \"ボート\"", "preposition": ""}, {"id": 179, "section": "Section 18 (1級)", "word": "societal", "phrase": "The government needs to _____ the issue before it causes further confusion.", "meaning": "社会の　社会に関する", "note": "", "etymology": "socius（仲間）", "preposition": ""}, {"id": 180, "section": "Section 18 (1級)", "word": "so-called", "phrase": "The expression \"_____\" appears in a passage about negotiation, responsibility, and social change.", "meaning": "いわゆる", "note": "", "etymology": "call→gal- \"呼ぶ、叫ぶ\"", "preposition": ""}];
+        const storageKey = 'hacker_wrong_list_1kyu';
+        let wrongList = JSON.parse(localStorage.getItem(storageKey)) || [];
+        let currentCombo = 0;
+
+        let currentSection = "";
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let isWrongOnlyMode = false;
+
+        const SECTIONS = [...new Set(MASTER_DATA.map(item => item.section))];
+
+        const domHome = document.getElementById('screen-home');
+        const domQuiz = document.getElementById('screen-quiz');
+        const domSectionList = document.getElementById('section-list');
+        const domTotalProgressPercent = document.getElementById('total-progress-percent');
+        const domTotalProgressBar = document.getElementById('total-progress-bar');
+        
+        const domQuizCount = document.getElementById('quiz-count');
+        const domQuizProgressBar = document.getElementById('quiz-progress-bar');
+        const domQuizComboBadge = document.getElementById('quiz-combo-badge');
+        const domQuizComboCount = document.getElementById('quiz-combo-count');
+        const domHeaderCombo = document.getElementById('header-combo');
+        const domHeaderComboCount = document.getElementById('header-combo-count');
+        const domQuizSectionTitle = document.getElementById('quiz-section-title');
+
+        const domHintMeaning = document.getElementById('quiz-hint-meaning');
+        const domBoostEtymology = document.getElementById('quiz-boost-etymology');
+        const domBoostPreposition = document.getElementById('quiz-boost-preposition');
+        const domPhrase = document.getElementById('quiz-phrase');
+        const domAnswerZone = document.getElementById('quiz-answer-zone');
+        const domCorrectWord = document.getElementById('quiz-correct-word');
+
+        const domBtnReveal = document.getElementById('btn-reveal');
+        const domBtnChoicePad = document.getElementById('quiz-choice-pad');
+        const domBtnWrong = document.getElementById('btn-wrong');
+        const domBtnCorrect = document.getElementById('btn-correct');
+        const domBtnBack = document.getElementById('btn-back');
+        const domBtnSpeakWord = document.getElementById('btn-speak-word');
+        const domBtnSpeakPhrase = document.getElementById('btn-speak-phrase');
+
+        function renderHome() {
+            domSectionList.innerHTML = "";
+            let totalItems = MASTER_DATA.length;
+            let totalMastered = totalItems - wrongList.length;
+            
+            let globalPercent = totalItems > 0 ? Math.round((totalMastered / totalItems) * 100) : 0;
+            domTotalProgressPercent.innerText = globalPercent + "%";
+            domTotalProgressBar.style.width = globalPercent + "%";
+
+            SECTIONS.forEach(secName => {
+                const secItems = MASTER_DATA.filter(item => item.section === secName);
+                const secWrongItems = secItems.filter(item => wrongList.includes(item.id));
+                const wrongCount = secWrongItems.length;
+
+                let statusBadge = `<span class="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded font-bold">進行中</span>`;
+                if (wrongCount === 0) {
+                    statusBadge = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded font-bold">CLEAR ✨</span>`;
+                } else if (wrongCount > 0) {
+                    statusBadge = `<span class="bg-rose-500/20 text-rose-400 text-[10px] px-2 py-0.5 rounded font-bold font-mono">苦手: ${wrongCount}問</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = "glass-card rounded-xl p-4 border border-slate-800 flex flex-col justify-between space-y-2.5";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-slate-200">${secName}</h3>
+                        ${statusBadge}
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <button onclick="startQuiz('${secName}', false)" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-center">解く</button>
+                        <button onclick="startQuiz('${secName}', true)" ${wrongCount === 0 ? 'disabled class="bg-slate-800 text-slate-600 font-bold py-2 rounded-lg text-center cursor-not-allowed"' : 'class="bg-rose-600/80 hover:bg-rose-600 text-white font-bold py-2 rounded-lg text-center"'} >苦手のみ</button>
+                        <button onclick="resetSectionProgress('${secName}')" class="bg-slate-800 hover:bg-slate-700 text-slate-400 font-medium py-2 rounded-lg text-center text-[11px]">リセット</button>
+                    </div>
+                `;
+                domSectionList.appendChild(card);
+            });
+
+            if (currentCombo > 0) {
+                domHeaderCombo.classList.remove('hidden');
+                domHeaderComboCount.innerText = currentCombo;
+            } else {
+                domHeaderCombo.classList.add('hidden');
+            }
+        }
+
+        function startQuiz(sectionName, wrongOnly) {
+            currentSection = sectionName;
+            isWrongOnlyMode = wrongOnly;
+            
+            let source = MASTER_DATA.filter(item => item.section === sectionName);
+            if (wrongOnly) {
+                source = source.filter(item => wrongList.includes(item.id));
+            }
+
+            if (source.length === 0) {
+                alert("対象の問題がありません。");
+                return;
+            }
+
+            currentQuestions = [...source].sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+
+            domHome.classList.add('hidden');
+            domQuiz.classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            domBtnReveal.classList.remove('hidden');
+            domBtnChoicePad.classList.add('hidden');
+            domAnswerZone.classList.add('invisible');
+
+            if (currentIndex >= currentQuestions.length) {
+                alert(`セクション完了！現在のコンボ: ${currentCombo} 連勝！`);
+                exitQuiz();
+                return;
+            }
+
+            const currentItem = currentQuestions[currentIndex];
+
+            domQuizCount.innerText = (currentQuestions.length - currentIndex);
+            domQuizSectionTitle.innerText = currentItem.section;
+            let progressRatio = (currentIndex / currentQuestions.length) * 100;
+            domQuizProgressBar.style.width = progressRatio + "%";
+
+            let fullNote = currentItem.note ? `<div class="text-slate-400 text-xs font-normal mt-1 bg-slate-950/40 p-2 rounded border border-slate-800/80">${currentItem.note}</div>` : '';
+            domHintMeaning.innerHTML = `<div>${currentItem.meaning}</div>${fullNote}`;
+            
+            domBoostEtymology.innerText = currentItem.etymology || "なし";
+            domBoostPreposition.innerText = currentItem.preposition || "なし";
+
+            domPhrase.innerText = currentItem.phrase;
+            domCorrectWord.innerText = currentItem.word;
+
+            if (currentCombo >= 3) {
+                domQuizComboBadge.classList.remove('opacity-0');
+                domQuizComboCount.innerText = currentCombo;
+            } else {
+                domQuizComboBadge.classList.add('opacity-0');
+            }
+        }
+
+        function revealAnswer() {
+            domBtnReveal.classList.add('hidden');
+            domBtnChoicePad.classList.remove('hidden');
+            domAnswerZone.classList.remove('invisible');
+
+            const currentItem = currentQuestions[currentIndex];
+            let rawPhrase = currentItem.phrase;
+            let targetWord = currentItem.word;
+
+            if (rawPhrase.trim().startsWith("_____")) {
+                targetWord = targetWord.charAt(0).toUpperCase() + targetWord.slice(1);
+            } else {
+                targetWord = targetWord.toLowerCase();
+            }
+            domCorrectWord.innerText = targetWord;
+            speak(targetWord, 1.0);
+        }
+
+        function handleUserJudgment(isCorrect) {
+            const currentItem = currentQuestions[currentIndex];
+
+            if (isCorrect) {
+                wrongList = wrongList.filter(id => id !== currentItem.id);
+                currentCombo++;
+            } else {
+                if (!wrongList.includes(currentItem.id)) {
+                    wrongList.push(currentItem.id);
+                }
+                currentCombo = 0;
+            }
+
+            localStorage.setItem(storageKey, JSON.stringify(wrongList));
+            currentIndex++;
+            showQuestion();
+        }
+
+        function exitQuiz() {
+            domQuiz.classList.add('hidden');
+            domHome.classList.remove('hidden');
+            renderHome();
+        }
+
+        function resetSectionProgress(sectionName) {
+            if (confirm(`${sectionName} の苦手記録をクリアしますか？`)) {
+                const targetIds = MASTER_DATA.filter(item => item.section === sectionName).map(item => item.id);
+                wrongList = wrongList.filter(id => !targetIds.includes(id));
+                localStorage.setItem(storageKey, JSON.stringify(wrongList));
+                renderHome();
+            }
+        }
+
+        function speak(text, speed = 1.0) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let cleanText = text.replace(/_____/g, "blank");
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = 'en-US';
+                utterance.rate = speed;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        domBtnReveal.addEventListener('click', revealAnswer);
+        domBtnCorrect.addEventListener('click', () => handleUserJudgment(true));
+        domBtnWrong.addEventListener('click', () => handleUserJudgment(false));
+        domBtnBack.addEventListener('click', () => exitQuiz());
+        domBtnSpeakWord.addEventListener('click', () => speak(currentQuestions[currentIndex].word, 1.0));
+        domBtnSpeakPhrase.addEventListener('click', () => speak(currentQuestions[currentIndex].phrase, 0.95));
+
+        renderHome();
+    </script>
+</body>
+</html>
